@@ -158,5 +158,16 @@
             textElement.innerText = messages[index];
         }, 3000);
     </script>
+    <audio id="myAudio" loop>
+        <source src="https://zingmp3.vn/bai-hat/Cuoi-Di-2T-ChangC/ZOBO0WO0.html" type="audio/mpeg">
+    </audio>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var audio = document.getElementById("myAudio");
+            audio.play().catch(error => console.log("Trình duyệt chặn autoplay: " + error));
+        });
+    </script>
+    
 </body>
 </html>
