@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pháo Hoa Chữ Nhấp Nháy</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: black;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .text-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 10px red, 0 0 20px yellow;
+            animation: blink 1s infinite alternate, moveText 5s infinite linear;
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        @keyframes moveText {
+            0% { transform: translate(-50%, -50%) translateX(-100px); }
+            100% { transform: translate(-50%, -50%) translateX(100px); }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="fireworks"></canvas>
+    <div class="text-overlay" id="blinking-text">vợ yêu ơi❤️</div>
+
+    <script>
+        const canvas = document.getElementById("fireworks");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        class Particle {
+            constructor(x, y, color, velocity) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.velocity = velocity;
+                this.alpha = 1;
+            }
+
+            update() {
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+                this.velocity.x *= 0.98;
+                this.velocity.y *= 0.98;
+                this.alpha -= 0.01;
+            }
+
+            draw() {
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        class Firework {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.particles = [];
+                this.exploded = false;
+                this.targetY = Math.random() * (canvas.height / 2);
+                this.velocity = { x: 0, y: -4 };
+                this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+            }
+
+            explode() {
+                for (let i = 0; i < 50; i++) {
+                    const angle = (Math.PI * 2 * i) / 50;
+                    const speed = Math.random() * 4 + 2;
+                    this.particles.push(
+                        new Particle(this.x, this.y, this.color, {
+                            x: Math.cos(angle) * speed,
+                            y: Math.sin(angle) * speed,
+                        })
+                    );
+                }
+                this.exploded = true;
+            }
+
+            update() {
+                if (!this.exploded) {
+                    this.y += this.velocity.y;
+                    if (this.y <= this.targetY) {
+                        this.explode();
+                    }
+                } else {
+                    this.particles.forEach(p => p.update());
+                    this.particles = this.particles.filter(p => p.alpha > 0);
+                }
+            }
+
+            draw() {
+                if (!this.exploded) {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                } else {
+                    this.particles.forEach(p => p.draw());
+                }
+            }
+        }
+
+        let fireworks = [];
+        function animate() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (Math.random() < 0.05) {
+                fireworks.push(new Firework(Math.random() * canvas.width, canvas.height));
+            }
+
+            fireworks.forEach(firework => firework.update());
+            fireworks.forEach(firework => firework.draw());
+            fireworks = fireworks.filter(f => f.exploded ? f.particles.length > 0 : true);
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        window.addEventListener("resize", () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Hiệu ứng đổi nội dung chữ
+        const textElement = document.getElementById("blinking-text");
+        const messages = ["❤️vợ yêu của anh cố lên❤️ ", "❤️anh yêu vợ❤️ 🍀", "🌟🍀 chúc vợ may mắn 🍀🌟", "👱🏽‍♀️mùng 8/3👱🏽‍♀️"," 😉vui vẻ 😉 & 🌹 hạnh phúc vợ nhé 🌹","❤️Diệu Tuyền❤️"];
+        let index = 0;
+
+        setInterval(() => {
+            index = (index + 1) % messages.length;
+            textElement.innerText = messages[index];
+        }, 3000);
+    </script>
+</body>
+</html>
